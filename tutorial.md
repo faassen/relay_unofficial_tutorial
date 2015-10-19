@@ -33,62 +33,158 @@ a good introduction to GraphQL. A GraphQL tutorial is at
 Setting up GraphQL backend
 --------------------------
 
-To get started, you need to install the unofficial relay tutorial
-server.
+Checking out the sources
+------------------------
 
-You then need to start it up using:
+To run the code in this tutorial, clone a copy of Relay: the
+Unofficial Tutorial from
+[Github](https://github.com/faassen/relay_unofficial_tutorial/).
 
-    $ npm start
+Change to its directory with the command-line:
 
-It exposes a GraphQL HTTP interface on port 8080. Don't bother going
-there with your browser though: it's not intended for direct human
-usage.
+  $ cd relay_unofficial_tutorial
 
-Instead all the unofficial Relay tutorial client. You can start it up
-using:
+Setting up the backend
+----------------------
 
-    $ npm start
+Once you've checked out the unofficial tutorial you can install the
+requirements for the backend using the [npm](http://www.npmjs.com)
+package manager:
 
-in its own directory.
+  $ cd rut-backend
 
-Setting up the GraphQL frontend
--------------------------------
+  $ npm install
 
-This sets up the code that runs in your web browser: the frontend. It
-actually does this by running *another* web server, on
-http://localhost:3000.
+This installs all the required dependencies listed in its
+`package.json`.
 
-This server is only there to make the client work: *something* needs to
-provide the HTML, CSS and JavaScript that you see in your web
-application. It could be using any front-end packaging solution and
-server backend you prefer. This one uses Webpack and the Webpack dev
-server. This web server does three things:
+The theme of `rut-backend` is that you have a collection of *stories*
+that are written by different *authors*. The demo stories are based on
+the nonsense poem
+[Jabberwocky](https://en.wikipedia.org/wiki/Jabberwocky) by Lewis
+Carroll.
 
--   Make sure that the right HTML and JavaScript can be loaded for your
-    Relay application. You can see it when you go to
-    http://localhost:3000.
--   proxy the GraphQL server on port 8080 to
-    http://localhost:3000/graphql. We merely do this to avoid
-    cross-domain access. If both the GraphQL server and the Relay-based
-    client code are hosted on the same port number (typically the
-    default port 80) you don't need to do this.
--   Provide a GraphiQL UI at http://localhost:3000/graphiql. Note the i
-    that makes all the difference! The GraphiQL UI a very nice web UI
-    that lets you do queries against an arbitrary GraphQL server and
-    explore its schema.
+The details of how `rut-backend` is implemented are not important for
+this tutorial, but we'll describe it briefly: it's an
+`express-graphql` server for node that uses the `graphql-js` reference
+implementation. The data is just stored in memory for the sake of
+simplicity. If you are curious you can read the source code.
+
+Once `npm install` completes, you can start the backend server:
+
+  $ npm start
+
+It exposes a GraphQL HTTP interface on port `8080` of your computer
+(`http://localhost:8080`). Don't bother going there with your browser
+though: it's not intended for direct human consumption.
+
+Setting up the frontend
+-----------------------
+
+Now that the backend is running, we can install the frontend. This is
+the HTMl and JavaScript code that will run in your web browser.
+
+The procedure is very similar to how you install and start the
+backend. Starting in the `relay_unofficial_tutorial` directory you
+go to `rut-frontend`:
+
+  $ cd rut-frontend
+
+And install its requirements:
+
+  $ npm install rut-frontend
+
+While the frontend code runs in your web browser, we still need a server
+so you can load it. So the frontend installs *another* web server. You can
+start it using:
+
+  $ npm start
+
+After a little while it becomes available at `http://localhost:3000`.
+
+The web server does three things:
+
+* Make sure that the tutorial frontend code is accessible through the
+  web. You can see it when you go to `http://localhost:3000`.
+
+* Provide a GraphiQL UI at `http://localhost:3000/graphiql`. Note
+  the `i` that makes all the difference! The GraphiQL UI a very nice
+  web UI that lets you do queries against an arbitrary GraphQL server
+  and explore its schema.
+
+* Proxy the GraphQL HTTP server on port `http://localhost:8080` to
+  `http://localhost:3000/graphql`. We merely do this to avoid
+  cross-domain access as the browser typically forbids this. If both
+  the GraphQL server and the Relay-based client code are hosted on the
+  same port number (typically the default port `80`) you wouldn't need
+  a proxy like this.
+
+The frontend server bundles JavaScript using
+[Webpack](https://webpack.github.io/), but you can use whatever
+technology you want to get the correct JavaScript served.
 
 Explore the backend using GraphiQL
 ----------------------------------
 
-You can easily explore the backend using GraphiQL. Just go to
-http://localhost:3000/graphiql. You can first explore the schema using
-the sidebar on the right. You can also type in queries in the main panel
-and execute them. Note that it has auto-completion that helps you write
-the correct queries for the backend!
+You can easily explore the backend using the GraphiQL UI. Just go to
+`http://localhost:3000/graphiql`.
+
+The GraphiQL UI lets you explore a GraphQL server. You can type
+GraphQL queries on the left. For instance, you can type:
+
+    {viewer { stories(first: 1) { edges { node { text }}}}}
+
+The query editor automatically validates your query and helps you
+auto-complete queries.
+
+You can then execute the query by pressing the arrow in the top bar. On
+the right you will see the result of the Query, in this case:
+
+    {
+      "data": {
+        "viewer": {
+          "stories": {
+            "edges": [
+              {
+                "node": {
+                  "text": "This is the story of how I saw the frumious Bandersnatch and lived."
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+
+So what did we just do? We wrote a query in the GraphQL language and
+sent it to the backend. The backend then responded with the answer. We
+asked for the first story available on the backend, and specifically
+its text.
+
+GraphQL is a language that lets the frontend author express precisely
+what data they want from a backend. It's important to realize that
+GraphQL is not a general query language like SQL. Instead it is a very
+specific and limited query language that lets you ask only those
+questions that the server reports it understands in its *schema*. The
+result of a GraphQL query is in JSON and follows the structure of the
+query.
+
+GraphQL does not only lets you read data from the server but also
+supports mutating that data. We'll get to that later.
+
+When you're in the GraphiQL UI, be sure to click on the `Docs` link
+on the top right. It brings up a sidebar that lets you explore the
+backend GraphQL schema. This way you can see exactly what fields it
+exposes.
+
+Try changing the `1` to the query to a larger number to request more
+stories. Also try this query to ask for author names for stories instead:
+
+    {viewer { stories(first: 1) { edges { node { author { name }}}}}}
 
 The frontend app
 ----------------
 
-The frontend app is at http://localhost:3000. It shows first few stories
-on the server, with a *more* button at the bottom to load additional
-ones.
+The frontend app is at `http://localhost:3000`. It shows first few
+stories on the server, with a *more* button at the bottom to load
+additional ones.
