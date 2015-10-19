@@ -26,27 +26,8 @@ const StoryContainer = Relay.createContainer(Story, {
 });
 
 class Stories extends React.Component {
-    getStories() {
-        const {previousStories, nextStories} = this.props.viewer;
-        if (previousStories.edges.length) {
-            return previousStories;
-        } else {
-            return nextStories;
-        }
-    }
     render() {
-        const stories = this.getStories();
-        let hasPrevious = false;
-        let hasNext = false;
-        if (this.props.relay.variables.wantPrevious) {
-            hasPrevious = this.props.viewer.previousStories.pageInfo.hasPreviousPage;
-            hasNext = true;
-        } else {
-            // if the after variable is null, we don't have previous
-            // otherwise, we always do as we just got the next batch
-            hasPrevious = this.props.relay.variables.after !== null;
-            hasNext = this.props.viewer.nextStories.pageInfo.hasNextPage;
-        }
+        const stories = this.props.viewer.stories;
         return (
             <div>
                 <ul>
@@ -58,34 +39,18 @@ class Stories extends React.Component {
                         );
                      })}
                 </ul>
-                <div>
-                    {hasPrevious ? <a onClick={()=> this.previous()}>Previous</a> : null}
-                    &nbsp;
-                    {hasNext ? <a onClick={() => this.next()}>Next</a> : null}
-                </div>
+                {stories.pageInfo.hasNextPage ?
+                 <div>
+                   <a onClick={()=> this.more()}>More...</a>
+                 </div> :
+                 null
+                 }
             </div>
         );
     }
-    previous() {
-        const stories = this.getStories();
+    more() {
         this.props.relay.setVariables({
-            first: null,
-            after: null,
-            last: 10,
-            before: stories.pageInfo.startCursor,
-            wantPrevious: true,
-            wantNext: false
-        });
-    }
-    next() {
-        const stories = this.getStories();
-        this.props.relay.setVariables({
-            last: null,
-            before: null,
-            first: 10,
-            after: stories.pageInfo.endCursor,
-            wantPrevious: false,
-            wantNext: true
+            first: this.props.relay.variables.first + 10
         });
     }
 }
@@ -95,43 +60,20 @@ const StoriesContainer = Relay.createContainer(Stories, {
     fragments: {
         viewer: () => Relay.QL`
               fragment on Viewer {
-                previousStories: stories(last: $last before: $before) @include(if: $wantPrevious) {
+                stories: stories(first: $first) {
                   edges {
-                    cursor
                     node {
                       ${StoryContainer.getFragment('story')}
                     }
                   }
                   pageInfo {
-                    startCursor
-                    endCursor
-                    hasPreviousPage
-                    hasNextPage
-                  }
-                }
-                nextStories: stories(first: $first after: $after) @include(if: $wantNext) {
-                  edges {
-                    cursor
-                    node {
-                      ${StoryContainer.getFragment('story')}
-                    }
-                  }
-                  pageInfo {
-                    startCursor
-                    endCursor
-                    hasPreviousPage
                     hasNextPage
                   }
                 }
               }`
     },
     initialVariables: {
-        first: 10,
-        last: null,
-        before: null,
-        after: null,
-        wantPrevious: false,
-        wantNext: true
+        first: 10
     }
 });
 
