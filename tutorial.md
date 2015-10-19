@@ -1,6 +1,8 @@
 Unofficial Relay Tutorial
 =========================
 
+**This tutorial is far from done. Do not use**
+
 Welcome to the unofficial Relay tutorial! This tutorial takes a
 different tack than the official one. It's written for Relay beginners
 as I'm a beginner.
