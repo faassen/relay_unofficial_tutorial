@@ -1,0 +1,18 @@
+{
+  "name": "rut-backend",
+  "description": "Relay - The Unauthorized Tutorial: Backend",
+  "repository": "faassen/rut-server",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "babel-node ./backend.js",
+    "generate-schema": "babel-node ./generate-schema.js"
+  },
+  "dependencies": {
+    "babel": "5.8.21",
+    "babel-core": "^5.8.25",
+    "express": "^4.13.1",
+    "express-graphql": "0.3.0",
+    "graphql": "^0.4.7",
+    "graphql-relay": "0.3.2"
+  }
+}
