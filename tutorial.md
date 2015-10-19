@@ -30,9 +30,6 @@ README](https://github.com/facebook/graphql/blob/master/README.md) is
 a good introduction to GraphQL. A GraphQL tutorial is at
 <http://learngraphql.com>
 
-Setting up GraphQL backend
---------------------------
-
 Checking out the sources
 ------------------------
 
@@ -51,9 +48,9 @@ Once you've checked out the unofficial tutorial you can install the
 requirements for the backend using the [npm](http://www.npmjs.com)
 package manager:
 
-  $ cd rut-backend
+    $ cd rut-backend
 
-  $ npm install
+    $ npm install
 
 This installs all the required dependencies listed in its
 `package.json`.
@@ -72,7 +69,7 @@ simplicity. If you are curious you can read the source code.
 
 Once `npm install` completes, you can start the backend server:
 
-  $ npm start
+    $ npm start
 
 It exposes a GraphQL HTTP interface on port `8080` of your computer
 (`http://localhost:8080`). Don't bother going there with your browser
@@ -88,17 +85,17 @@ The procedure is very similar to how you install and start the
 backend. Starting in the `relay_unofficial_tutorial` directory you
 go to `rut-frontend`:
 
-  $ cd rut-frontend
+    $ cd rut-frontend
 
 And install its requirements:
 
-  $ npm install rut-frontend
+    $ npm install rut-frontend
 
 While the frontend code runs in your web browser, we still need a server
 so you can load it. So the frontend installs *another* web server. You can
 start it using:
 
-  $ npm start
+    $ npm start
 
 After a little while it becomes available at `http://localhost:3000`.
 
