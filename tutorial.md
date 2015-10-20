@@ -179,9 +179,149 @@ stories. Also try this query to ask for author names for stories instead:
 
     {viewer { stories(first: 1) { edges { node { author { name }}}}}}
 
-The frontend app
-----------------
+`Story` in the frontend app
+---------------------------
 
 The frontend app is at `http://localhost:3000`. It shows first few
-stories on the server, with a *more* button at the bottom to load
-additional ones.
+stories on the server, with the story text and the name of the
+author. You can load additional stories by pressing the *more* button
+at the bottom. Try it out!
+
+So how it is put together?
+
+The structure of the application is very similar to a normal React
+application: there are React components that render things that come
+into props. Here's the story component from the tutorial:
+
+    class Story extends React.Component {
+        render() {
+            const {story} = this.props;
+            return (
+                <div>{story.author.name}: {story.text}</div>
+            );
+        }
+    }
+
+The frontend app shows a list of such stories. The `Story` component
+gets the `story` prop and renders the `name` of its `author`, and its
+`text`.
+
+Note that it is *pure*: it does not have state of its own. This is not
+a requirement of Relay, but it's good practice to organize your
+application in such a way so that local component state is isolated in
+particular components.
+
+So far that's just plain React. What's special in a Relay application
+is how this component gets its data, namely what is is
+`props.story`. We do this using a GraphQL fragment:
+
+    const StoryContainer = Relay.createContainer(Story, {
+        fragments: {
+            story: () => Relay.QL`
+            fragment on Story {
+                id
+                text
+                author {
+                 name
+                }
+            }
+            `
+        }
+    });
+
+Now what is going on here? Let's first look at it with the GraphQL bits
+elided so we can focus on the rest:
+
+Let's look back at the `createContainer` statement with the GraphQL
+string elided:
+
+    const StoryContainer = Relay.createContainer(Story, {
+        fragments: {
+            story: () => Relay.QL`...`
+        }
+    });
+
+
+So what does this mean? The first important thing to realize is that
+we're defining *another* React component here, named `StoryContainer`. We
+don't do this in the normal React way however. Instead we use a special
+API provided by Relay called `createContainer`.
+
+We say here that the `StoryContainer` is created using the `Story`
+component we defined before. It's important to realize that the
+`Story` component is completely unaffected by this: we are defining a
+new React component here by wrapping the original one. It's more or
+less as if `StoryContainer` is using `Story` in its `render` function.
+
+We pass some configuration information along in the object literal:
+
+    {
+        fragments: {
+            story: () => Relay.QL`...`
+    }
+
+We remember from before that `story` is the prop expected by the
+`Story` React component. Here we tell Relay what information we need
+to get for it. We do this using an arrow function that returns a
+GraphQL fragment.
+
+Let's look at the fragment next:
+
+    Relay.QL`
+        fragment on Story {
+            id
+            text
+            author {
+              name
+            }
+        }
+        `
+
+The GraphQL fragment is defined using a string prefixed by
+`Relay.QL`. The string uses backquotes, which allows multi-line
+strings. This way source code for one language (GraphQL) is embedded
+in the source code of another (JavaScript). In this it is similar to
+the JSX extension to JavaScript as used by React. We'll discuss how
+this works in more detail later.
+
+So let's zoom into the actual GraphQL snippet:
+
+    fragment on Story {
+        id
+        text
+        author {
+          name
+        }
+    }
+
+This GraphQL snippet says multiple things:
+
+* We expect a GraphQL node of type `Story` here.
+
+* We want to get particular fields and subfields from it: the ones we
+  use in our `Story` React component.
+
+`Stories` in the frontend app
+-----------------------------
+
+So now we've defined how to render a single story and what data to
+fetch for it. How do we render a list of them with our `more...`
+button?
+
+
+Relay.QL
+--------
+
+Relay requires you use Babel. Babel is a JavaScript source transpiler
+that lets you use new features added to the JavaScript language before
+browsers implemented support for them, such as ES6 classes, arrow functions
+and the aforementioned multi-line strings.
+
+Relay extends the JavaScript language to recognize `Relay.QL` strings
+as GraphQL snippets. It plugs into Babel to do this. The plugin
+detects the `Relay.QL` strings as GraphQL snippets. It precompiles
+them, and fails if a GraphQL snippet is not valid GraphQL according to
+the server schema -- this way you get compile-time errors if you do
+something wrong. It also generates information that helps Relay to
+optimize server access.
+
